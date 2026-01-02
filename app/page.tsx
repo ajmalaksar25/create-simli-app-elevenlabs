@@ -51,6 +51,12 @@ const Demo: React.FC = () => {
         <div>
           {showDottedFace && <DottedFace />}
           <SimliElevenlabs
+            dynamicVariables={{
+              candidate_name: "John Doe",
+              job_description: "Software Engineer",
+              summary: "John Doe is a software engineer with 5 years of experience in the field.",
+              match: "John Doe is a good fit for the role of Software Engineer.",
+            }}
             agentId={avatar.elevenlabs_agentid}
             simli_faceid={avatar.simli_faceid}
             onStart={onStart}

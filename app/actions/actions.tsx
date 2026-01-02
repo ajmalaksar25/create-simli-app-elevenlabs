@@ -1,7 +1,13 @@
 'use server';
 
+export interface DynamicVariablesConfig {
+  dynamic_variable_placeholders: {
+    [key: string]: string | number | boolean;
+  };
+}
+
 interface AgentConfig {
-  name: string;
+  name?: string;
   conversation_config: {
     agent: {
       prompt: {
@@ -36,13 +42,14 @@ interface AgentConfig {
       client_events: string[];
     };
   };
-  platform_settings: {
+  platform_settings?: {
     auth: {
       enable_auth: boolean;
       allowlist: string[];
       shareable_token: string | null;
     };
   };
+  dynamic_variables_config?: DynamicVariablesConfig;
 }
 
 interface ElevenLabsAgentResponse {

@@ -5,12 +5,20 @@ import cn from "./utils/TailwindMergeAndClsx";
 import IconSparkleLoader from "@/media/IconSparkleLoader";
 import { getElevenLabsSignedUrl } from "./actions/actions";
 
+export interface DynamicVariables {
+  candidate_name?: string;
+  job_description?: string;
+  match?: string;
+  summary?: string;
+}
+
 interface SimliElevenlabsProps {
   simli_faceid: string;
   agentId: string;
   onStart: () => void;
   onClose: () => void;
   showDottedFace: boolean;
+  dynamicVariables?: DynamicVariables;
 }
 
 // WebSocket event types
@@ -32,6 +40,7 @@ const SimliElevenlabs: React.FC<SimliElevenlabsProps> = ({
   onStart,
   onClose,
   showDottedFace,
+  dynamicVariables,
 }) => {
   // State management
   const [isLoading, setIsLoading] = useState(false);
@@ -246,11 +255,29 @@ const SimliElevenlabs: React.FC<SimliElevenlabsProps> = ({
       websocket.onopen = async () => {
         console.log("ElevenLabs WebSocket connected");
 
+        // Prepare dynamic variables if provided
+        const conversationConfigOverride = dynamicVariables ? {
+          agent: {
+            first_message: `Hey ${dynamicVariables?.candidate_name}, I'm Brandon, your interviewer. I'll be asking you a few questions to assess your skills and experience. Let's get started.`,
+            dynamic_variables: {
+              dynamic_variable_placeholders: {
+                ...(dynamicVariables.candidate_name && { candidate_name: dynamicVariables.candidate_name }),
+                ...(dynamicVariables.job_description && { job_description: dynamicVariables.job_description }),
+                ...(dynamicVariables.match && { match: dynamicVariables.match }),
+                ...(dynamicVariables.summary && { summary: dynamicVariables.summary }),
+              }
+            }
+          }
+        } : undefined;
+
         // Send conversation initiation with proper format
         sendMessage(websocket, {
           type: "conversation_initiation_client_data",
           conversation_initiation_client_data: {
-            custom_llm_extra_body: {}
+            custom_llm_extra_body: {},
+            ...(conversationConfigOverride && {
+              conversation_config_override: conversationConfigOverride
+            })
           }
         });
 
@@ -369,7 +396,7 @@ const SimliElevenlabs: React.FC<SimliElevenlabsProps> = ({
       setError(`Error starting interaction: ${error.message}`);
       setIsLoading(false);
     }
-  }, [agentId, onStart]);
+  }, [agentId, onStart, dynamicVariables]);
 
   /**
    * Handles stopping the interaction
